@@ -53,6 +53,8 @@ TD.wxShare = function(data, callback){
 			}, function(msg){
                 console.log(msg);
             });
+
+            _czc && _czc.push(['_trackEvent', '分享', "朋友圈"]);
 		},
 		cancel: function () {
 			// 用户取消分享后执行的回调函数
@@ -79,6 +81,8 @@ TD.wxShare = function(data, callback){
             }, function(msg){
                 console.log(msg);
             });
+
+            _czc && _czc.push(['_trackEvent', '分享', "好友"]);
         },
         cancel: function () {
             // 用户取消分享后执行的回调函数
@@ -119,11 +123,18 @@ TD.initWxApi = function(shareData, errback, succback){
 				'chooseImage',
 				'previewImage',
 				'uploadImage',
-				'downloadImage'
+				'downloadImage',
+				'getNetworkType'
 			]
 		});
 		wx.ready(function(){
 			TD.wxShare(shareData);
+			wx.getNetworkType({
+	            success: function (res) {
+	                var networkType = res.networkType; // 返回网络类型2g，3g，4g，wifi
+	                _czc && _czc.push(['_trackEvent', networkType, '网络类型']);
+	            }
+	        });
 		});
 	},function(err){
 		console.log(err);
