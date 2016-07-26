@@ -42,7 +42,7 @@ TD.wxShare = function(data, callback){
 			TD.ajax({
 				url: 'http://click.treedom.cn/log',
 				type: 'POST',
-				url: data.track,
+				//url: data.track,
 				data: {
 					key: 'wechat',
                     val: 'timeline',
@@ -149,34 +149,51 @@ config = {
 	height: 600,
 	type: 'cover' // 'contain'
 }
+return config定义的scale值
+v1 新增，在dom上增加data-type属性，可选内容有"cover"、"contain"
 */
 TD.responseBody = function(config) {
 	config = config || {};
 	config.width = config.width || 375;
 	config.height = config.height || 600;
 	config.type = config.type || 'cover'; //'cover'、'contain'
+	console.log(config);
 
 	var responseList = $('[data-response]');
 
 	var rate;
+	var rateCover;
+	var rateContain;
 
 	var responseFn = function(){
 		var rateX = window.innerWidth / config.width;
 		var rateY = window.innerHeight / config.height;
 
+		rateCover = rateX > rateY ? rateX : rateY;
+		rateContain = rateX < rateY ? rateX : rateY;
+
 		switch (config.type) {
 			case 'cover':
-				rate = rateX > rateY ? rateX : rateY;
+				rate = rateCover;
 				break;
 			case 'contain':
-				rate = rateX < rateY ? rateX : rateY;
+				rate = rateContain;
 				break;
 			default:
 				rate = 1;
 		}
 
 		responseList.each(function(i){
-			this.style.webkitTransform = 'scale(' + rate + ')';
+			var type = $(this).attr('data-type');
+			var elRate;
+			if(type == 'cover'){
+				elRate = rateCover;
+			}else if(type == 'contain') {
+				elRate = rateContain;
+			}else {
+				elRate = rate;
+			}
+			this.style.webkitTransform = 'scale(' + elRate + ')';
 		});
 	};
 
@@ -205,6 +222,34 @@ TD.portraitTips = function(el) {
 	$(window).on('resize', function(){
 		orientHandler();
 	});
+};
+
+//网络工具包
+TD.util = {}
+TD.util.getQuery = function(name){
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+};
+TD.util.setCookie = function (name, value, expiredays) {
+    var exdate = new Date();
+    document.cookie = name + "=" + value + ";expires=" +
+        ((expiredays == null) ? exdate.setDate(exdate.getDate() + expiredays) : exdate.toGMTString())
+        + ";domain=treedom.cn";
+};
+TD.util.getCookie = function (name) {
+    var c_start, c_end;
+    if (document.cookie.length > 0) {
+        c_start = document.cookie.indexOf(name + "=");
+        if (c_start != -1) {
+            c_start = c_start + name.length + 1;
+            c_end = document.cookie.indexOf(";", c_start);
+            if (c_end == -1) c_end = document.cookie.length;
+            return unescape(document.cookie.substring(c_start, c_end))
+        }
+    }
+    return '';
 };
 
 module.exports = TD;
